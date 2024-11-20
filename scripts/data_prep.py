@@ -8,31 +8,27 @@ This includes:
 """
 
 import os
+import numpy as np
+import cv2
 from PIL import Image
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True #needed because otherwise it gives an error
 
+data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "data")
 
-data_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), "dataset")
+def turn_image_lab(img):
+    img = img.convert("RGB")
+    img_np = np.array(img)
+    lab_img = cv2.cvtColor(img_np, cv2.COLOR_RGB2Lab)
 
-
-def turn_image_lab():
-    pass
-
-
-def extract_labels():
-    # take ab values and classify them into one of the bins.
-    # save the labels
-    pass
-
-
-def extract_l(labimg):
-    pass
+    return lab_img
 
 
 # resizes all images in datadir to width*height
 # turns all images in datadir into Lab colorspace
 def transform_images(datadir, width, height):
     # skimming through every image in datadir with .jpg ending
-    for root, _, files in os.walk(datadir):
+    for root, dirs, files in os.walk(datadir):
         for file in files:
             if file.endswith(".jpg"):
                 file_path = os.path.join(root, file)
@@ -40,11 +36,11 @@ def transform_images(datadir, width, height):
                 with Image.open(file_path) as img:
                     # resizing image
                     if img.size != (width, height):
-                        img_resized = img.resize((width, height))
-                        img_resized.save(file_path)
+                        img = img.resize((width, height))
                         print(f"Bild {file} in {root} auf {width}*{height} transformiert.")
 
                     # turn image to Lab colorspace
-
-
-
+                    lab_img = turn_image_lab(img)
+                    np.save(file_path, lab_img)
+print(data_dir)
+transform_images(data_dir, 256,256)

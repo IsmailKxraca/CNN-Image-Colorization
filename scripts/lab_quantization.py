@@ -1,5 +1,5 @@
 """
-In this script i will quantize the ab colorspace into discrete classes.
+In this script I will quantize the ab colorspace into discrete classes.
 I will use binning and clustering to identify which colors get used in reality and which are not.
 
 I will code functions for extracting the ab values of a Lab-image and classify them into the color-classes.
@@ -15,4 +15,14 @@ def quantize():
 
 
 def map_colorspace():
+    pass
+
+
+def extract_labels():
+    # take ab values and classify them into one of the bins.
+    # save the labels
+    pass
+
+
+def extract_l(labimg):
     pass
