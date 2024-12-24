@@ -20,13 +20,11 @@ def split_lab_channels(labimg):
     return l_channel, a_channel, b_channel
 
 
-def lab_bins(min_val, max_val, bin_size):
+def lab_bins(min_val = -128, max_val = 127, bin_size = 10):
     # creating the centers of the bins;
     grid_points = np.arange(min_val + bin_size / 2, max_val, bin_size)
     ab_grid = np.array(np.meshgrid(grid_points, grid_points)).T.reshape(-1, 2)
     # two matrices with 313 values. One matrix for x and other for y values. Makes the grid
-    print("Grid Shape:", ab_grid.shape)
-    print(ab_grid)
     return ab_grid
 
 
@@ -42,4 +40,5 @@ def find_nearest_bin(a_channel, b_channel, ab_grid):
     return nearest_bins.reshape(a_channel.shape)
 
 
-lab_bins(min_val, max_val, bin_size)
+ab_grid = lab_bins(min_val, max_val, bin_size)
+
