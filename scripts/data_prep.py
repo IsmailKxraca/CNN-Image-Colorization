@@ -1,5 +1,5 @@
 """
-In this script, i will prepare the dataset for the usage in the CNN
+In this script, I will prepare the dataset for the usage in the CNN
 This includes:
  - turning them into 256x256
  - turn them into LAB
