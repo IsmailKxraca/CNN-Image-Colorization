@@ -1,3 +1,9 @@
+"""
+A Streamlit website for simple User Interface.
+You can start the Streamlit-Website by pasting following command in your cmd:
+python -m streamlit run [path to this script]
+"""
+
 import streamlit as st
 import numpy as np
 from PIL import Image
@@ -84,18 +90,18 @@ if 'image' in locals() and image is not None:
 
     with col1:
         st.markdown("<h3 style='text-align: center; color: #ffffff;'>Groundtruth Bild</h3>", unsafe_allow_html=True)
-        st.image(image, use_column_width=True)
+        st.image(image, use_container_width=True)
 
     with col2:
         st.markdown("<h3 style='text-align: center; color: #ffffff;'>Schwarz & Weiß</h3>", unsafe_allow_html=True)
         bw_image = convert_to_bw(image)
-        st.image(bw_image, use_column_width=True)
+        st.image(bw_image, use_container_width=True)
 
     with col3:
         st.markdown("<h3 style='text-align: center; color: #9d4edd;'>Eingefärbtes Bild</h3>", unsafe_allow_html=True)
         if st.button("Einfärben"):
             colorized_image = colorize_image(bw_image)
-            st.image(colorized_image, use_column_width=True)
+            st.image(colorized_image, use_container_width=True)
         else:
             st.write("Klicke auf 'Einfärben' um ein Ergebniss zu erhalten")
 
