@@ -5,22 +5,30 @@ import torch.nn.functional as F
 from eccv16 import eccv16
 from skimage import color
 from siggraph17 import siggraph17
+from PIL import Image
 
 
-def preprocess_image(img):
-    img = img.convert("RGB")
-    resized_img = img.resize((256, 256))
+def load_img(img_path):
+    out_np = np.asarray(Image.open(img_path))
+    if out_np.ndim == 2:
+        out_np = np.tile(out_np[:, :, None], 3)
+    return out_np
 
-    resized_img_np = np.array(resized_img)
-    resized_lab_img = cv2.cvtColor(resized_img_np, cv2.COLOR_RGB2Lab)
 
-    orig_img_np = np.array(img)
-    orig_lab_img = cv2.cvtColor(orig_img_np, cv2.COLOR_RGB2Lab)
+def resize_img(img, HW=(256, 256), resample=3):
+    return np.asarray(Image.fromarray(img).resize((HW[1], HW[0]), resample=resample))
+
+
+def preprocess_image(img_rgb, HW=(256, 256), resample=3):
+    resized_img_rgb = resize_img(img_rgb, HW=HW, resample=resample)
+
+    orig_lab_img = color.rgb2lab(img_rgb)
+    resized_lab_img = color.rgb2lab(resized_img_rgb)
 
     resized_img_l_channel = resized_lab_img[:, :, 0]
     orig_img_l_channel = orig_lab_img[:, :, 0]
 
-    resized_tensor_l = torch.Tensor(resized_img_l_channel)[None,None,:,:]
+    resized_tensor_l = torch.Tensor(resized_img_l_channel)[None, None, :, :]
     orig_tensor_l = torch.Tensor(orig_img_l_channel)[None, None, :, :]
 
     return orig_tensor_l, resized_tensor_l
@@ -50,4 +58,3 @@ def colorize(orig_tensor_l, resized_tensor_l):
     out_img_siggraph17 = postprocess_image(orig_tensor_l, colorizer_siggraph17(resized_tensor_l).cpu())
 
     return out_img_siggraph17
-

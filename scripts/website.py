@@ -21,7 +21,7 @@ def colorize_image(image):
         temp_file.write(uploaded_file.getbuffer())
         temp_path = temp_file.name
 
-    img = Image.open(temp_path)
+    img = load_img(temp_path)
     orig_l_tensor, resized_l_tensor = preprocess_image(img)
 
     colorized_img = colorize(orig_l_tensor, resized_l_tensor)
