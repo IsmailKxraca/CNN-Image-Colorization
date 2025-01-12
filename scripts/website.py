@@ -96,9 +96,9 @@ if upload_option == "Bild Hochladen":
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
 else:
-    image = st.camera_input("Mache ein Foto")
-    if image is not None:
-        image = Image.open(image)
+    uploaded_file = st.camera_input("Mache ein Foto")
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
 
 if 'image' in locals() and image is not None:
     col1, col2, col3 = st.columns(3)
