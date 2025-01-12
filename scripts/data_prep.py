@@ -12,9 +12,11 @@ import numpy as np
 import cv2
 from PIL import Image
 from PIL import ImageFile
-ImageFile.LOAD_TRUNCATED_IMAGES = True #needed because otherwise it gives an error
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # needed because otherwise it gives an error
 
 data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "data")
+
 
 def turn_image_lab(img):
     img = img.convert("RGB")
@@ -42,5 +44,7 @@ def transform_images(datadir, width, height):
                     # turn image to Lab colorspace
                     lab_img = turn_image_lab(img)
                     np.save(file_path, lab_img)
-print(data_dir)
-transform_images(data_dir, 256,256)
+
+
+#print(data_dir)
+#transform_images(data_dir, 256, 256)

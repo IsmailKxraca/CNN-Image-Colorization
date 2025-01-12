@@ -8,6 +8,8 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import cv2
+from main import *
+import tempfile
 
 
 def convert_to_bw(image):
@@ -15,8 +17,16 @@ def convert_to_bw(image):
 
 
 def colorize_image(image):
-    # In this function the image will get colorized with the AI
-    return image
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+        temp_file.write(uploaded_file.getbuffer())
+        temp_path = temp_file.name
+
+    img = Image.open(temp_path)
+    orig_l_tensor, resized_l_tensor = preprocess_image(img)
+
+    colorized_img = colorize(orig_l_tensor, resized_l_tensor)
+
+    return colorized_img
 
 
 st.set_page_config(page_title="Image Colorization", layout="wide")
@@ -100,7 +110,7 @@ if 'image' in locals() and image is not None:
     with col3:
         st.markdown("<h3 style='text-align: center; color: #9d4edd;'>Eingefärbtes Bild</h3>", unsafe_allow_html=True)
         if st.button("Einfärben"):
-            colorized_image = colorize_image(bw_image)
+            colorized_image = colorize_image(image)
             st.image(colorized_image, use_container_width=True)
         else:
             st.write("Klicke auf 'Einfärben' um ein Ergebniss zu erhalten")
