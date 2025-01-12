@@ -13,7 +13,12 @@ import tempfile
 
 
 def convert_to_bw(image):
-    return cv2.cvtColor(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+    image = np.array(image)
+    if len(image.shape) == 2:
+        bw_image = image
+    else:
+        bw_image = cv2.cvtColor(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+    return bw_image
 
 
 def colorize_image(image):
