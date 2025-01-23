@@ -1,16 +1,30 @@
+"""
+This script was (partly) generated with the help of v0 by Vercel
+
+A Streamlit website for simple User Interface.
+You can start the Streamlit-Website by pasting following command in your cmd:
+python -m streamlit run [path to this script]
+"""
+
 import streamlit as st
 import numpy as np
 from PIL import Image
 import cv2
+import tempfile
 
 
 def convert_to_bw(image):
-    return cv2.cvtColor(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+    image = np.array(image)
+    if len(image.shape) == 2:
+        bw_image = image
+    else:
+        bw_image = cv2.cvtColor(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB)
+    return bw_image
 
 
 def colorize_image(image):
-    # In this function the image will get colorized with the AI
-    return image
+    colorized_img = image
+    return colorized_img
 
 
 st.set_page_config(page_title="Image Colorization", layout="wide")
@@ -75,31 +89,29 @@ if upload_option == "Bild Hochladen":
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
 else:
-    image = st.camera_input("Mache ein Foto")
-    if image is not None:
-        image = Image.open(image)
+    uploaded_file = st.camera_input("Mache ein Foto")
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
 
 if 'image' in locals() and image is not None:
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown("<h3 style='text-align: center; color: #ffffff;'>Groundtruth Bild</h3>", unsafe_allow_html=True)
-        st.image(image, use_column_width=True)
+        st.image(image, use_container_width=True)
 
     with col2:
         st.markdown("<h3 style='text-align: center; color: #ffffff;'>Schwarz & Weiß</h3>", unsafe_allow_html=True)
         bw_image = convert_to_bw(image)
-        st.image(bw_image, use_column_width=True)
+        st.image(bw_image, use_container_width=True)
 
     with col3:
         st.markdown("<h3 style='text-align: center; color: #9d4edd;'>Eingefärbtes Bild</h3>", unsafe_allow_html=True)
         if st.button("Einfärben"):
-            colorized_image = colorize_image(bw_image)
-            st.image(colorized_image, use_column_width=True)
+            colorized_image = colorize_image(image)
+            st.image(colorized_image, use_container_width=True)
         else:
             st.write("Klicke auf 'Einfärben' um ein Ergebniss zu erhalten")
 
 else:
     st.write("Upload an image or take a picture to start the colorization process.")
-
-
