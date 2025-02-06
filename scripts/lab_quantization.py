@@ -7,6 +7,7 @@ I will code functions for extracting the ab values of a Lab-image and classify t
 import numpy as np
 from skimage.color import lab2rgb
 import matplotlib.pyplot as plt
+import cv2
 
 
 # parameters for bins
@@ -24,10 +25,15 @@ def split_lab_channels(labimg):
 
 
 def lab_bins(min_val = -110, max_val = 110, bin_size = 10):
-    # creating the centers of the bins;
+    """
+    this function bins the LAB-space
+    :param min_val: the minimum value of the colorspace
+    :param max_val: the maximum value of the colorspace
+    :param bin_size: size of the bins
+    :return: an Array with the center of the bins in shape of (484, 2) (with default params)
+    """
     grid_points = np.arange(min_val + bin_size / 2, max_val, bin_size)
     ab_grid = np.array(np.meshgrid(grid_points, grid_points)).T.reshape(-1, 2)
-    # two matrices with 313 values. One matrix for x and other for y values. Makes the grid
     return ab_grid
 
 
@@ -75,5 +81,29 @@ def visualize_grid_colours(ab_grid, L=50):
     # plot diagram
     plt.show()
 
+def quantize_ab(ab_image, ab_grid):
+    # Reshape des Bildes für einfachere Berechnungen
+    H, W, _ = ab_image.shape
+    ab_flat = ab_image.reshape(-1, 2)  # (H*W, 2)
+
+    # Berechne die euklidische Distanz zu jedem Bin (für alle Pixel)
+    distances = np.linalg.norm(ab_flat[:, None, :] - ab_grid[None, :, :], axis=2)  # (H*W, 484)
+
+    # Finde den Index des nächsten ab_grid-Bins (d.h. die Klasse)
+    labels = np.argmin(distances, axis=1)  # (H*W,)
+
+    return labels.reshape(H, W)  # (H, W)
+
 ab_grid = lab_bins(min_val, max_val, bin_size)
-visualize_grid_colours(ab_grid)
+print(ab_grid.shape)
+#visualize_grid_colours(ab_grid)
+
+test = np.load("000f2ebfe51758.jpg.npy")
+rgb_image = cv2.cvtColor(test, cv2.COLOR_LAB2RGB)
+
+# Anzeige des RGB-Bildes mit Matplotlib
+plt.imshow(rgb_image)
+plt.axis('off')  # Achsen ausblenden
+plt.show()
+
+#probleme: LAB images wurden mit OpenCv transformiert: OpenCv speichert in unit8 form 0-255

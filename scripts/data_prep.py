@@ -12,17 +12,16 @@ import numpy as np
 import cv2
 from PIL import Image
 from PIL import ImageFile
+from skimage import io, color
 ImageFile.LOAD_TRUNCATED_IMAGES = True #needed because otherwise it gives an error
 
 data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "data")
 
 def turn_image_lab(img):
-    img = img.convert("RGB")
-    img_np = np.array(img)
-    lab_img = cv2.cvtColor(img_np, cv2.COLOR_RGB2Lab)
+    rgb_image = io.imread(img)
+    lab_img = color.rgb2lab(rgb_image)
 
     return lab_img
-
 
 # resizes all images in datadir to width*height
 # turns all images in datadir into Lab colorspace
@@ -44,3 +43,10 @@ def transform_images(datadir, width, height):
                     np.save(file_path, lab_img)
 print(data_dir)
 transform_images(data_dir, 256,256)
+
+def prep_image(image, width, height):
+    # resize image 256x256
+    # turn into LAB
+    # extract L as X and A-B as Label
+    # put Labels in Bin-Classes
+    pass
