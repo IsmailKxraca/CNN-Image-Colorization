@@ -37,16 +37,18 @@ def lab_bins(min_val = -110, max_val = 110, bin_size = 10):
     return ab_grid
 
 
-def find_nearest_bin(a_channel, b_channel, ab_grid):
-    # creates a vector with every pixel as ((a1,b1),(a2,b2) ...)
-    ab_values = np.stack((a_channel, b_channel), axis=-1).reshape(-1, 2)
+def quantize_ab(ab_image, ab_grid):
+    # reshape
+    H, W, _ = ab_image.shape
+    ab_flat = ab_image.reshape(-1, 2)
 
-    # calculates the Euclidean distance between every pixel and every bin-center and saves it in a new dimension
-    distances = np.linalg.norm(ab_values[:, None, :] - ab_grid[None, :, :], axis=-1)
+    # calculate distance to every bin center
+    distances = np.linalg.norm(ab_flat[:, None, :] - ab_grid[None, :, :], axis=2)
 
-    # finds the nearest bin-center for every pixel. vector with bin-center of every class (256x256)
-    nearest_bins = np.argmin(distances, axis=1)
-    return nearest_bins.reshape(a_channel.shape)
+    # find nearest bincenter
+    labels = np.argmin(distances, axis=1)
+
+    return labels.reshape(H, W)
 
 
 def visualize_grid_colours(ab_grid, L=50):
@@ -80,30 +82,3 @@ def visualize_grid_colours(ab_grid, L=50):
 
     # plot diagram
     plt.show()
-
-def quantize_ab(ab_image, ab_grid):
-    # Reshape des Bildes für einfachere Berechnungen
-    H, W, _ = ab_image.shape
-    ab_flat = ab_image.reshape(-1, 2)  # (H*W, 2)
-
-    # Berechne die euklidische Distanz zu jedem Bin (für alle Pixel)
-    distances = np.linalg.norm(ab_flat[:, None, :] - ab_grid[None, :, :], axis=2)  # (H*W, 484)
-
-    # Finde den Index des nächsten ab_grid-Bins (d.h. die Klasse)
-    labels = np.argmin(distances, axis=1)  # (H*W,)
-
-    return labels.reshape(H, W)  # (H, W)
-
-ab_grid = lab_bins(min_val, max_val, bin_size)
-print(ab_grid.shape)
-#visualize_grid_colours(ab_grid)
-
-test = np.load("000f2ebfe51758.jpg.npy")
-rgb_image = cv2.cvtColor(test, cv2.COLOR_LAB2RGB)
-
-# Anzeige des RGB-Bildes mit Matplotlib
-plt.imshow(rgb_image)
-plt.axis('off')  # Achsen ausblenden
-plt.show()
-
-#probleme: LAB images wurden mit OpenCv transformiert: OpenCv speichert in unit8 form 0-255
