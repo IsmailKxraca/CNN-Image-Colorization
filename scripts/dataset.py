@@ -26,7 +26,3 @@ class PreprocessedColorizationDataset(Dataset):
         L_tensor = torch.tensor(L, dtype=torch.float32).unsqueeze(0)
         AB_tensor = torch.tensor(AB, dtype=torch.long)
         return L_tensor, AB_tensor
-
-# dataloader example
-train_dataset = PreprocessedColorizationDataset("data/processed/L", "data/processed/AB")
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
