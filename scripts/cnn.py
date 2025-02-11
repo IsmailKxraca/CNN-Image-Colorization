@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class ColorizationCNN(nn.Module):
-    def __init__(self, norm_layer=nn.BatchNorm2d):
+    def __init__(self,classes=484,  norm_layer=nn.BatchNorm2d):
         super(ColorizationCNN, self).__init__()
 
         model1 = [nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=True), ]
@@ -67,7 +67,7 @@ class ColorizationCNN(nn.Module):
         model8 += [nn.ReLU(True), ]
 
         # 484 classes
-        model8 += [nn.Conv2d(256, 484, kernel_size=1, stride=1, padding=0, bias=True), ]
+        model8 += [nn.Conv2d(256, classes, kernel_size=1, stride=1, padding=0, bias=True), ]
 
         self.model1 = nn.Sequential(*model1)
         self.model2 = nn.Sequential(*model2)
@@ -79,7 +79,7 @@ class ColorizationCNN(nn.Module):
         self.model8 = nn.Sequential(*model8)
 
         self.softmax = nn.Softmax(dim=1)
-        self.model_out = nn.Conv2d(484, 2, kernel_size=1, padding=0, dilation=1, stride=1, bias=False)
+        self.model_out = nn.Conv2d(classes, 2, kernel_size=1, padding=0, dilation=1, stride=1, bias=False)
         self.upsample4 = nn.Upsample(scale_factor=4, mode='bilinear')
 
     def forward(self, input_l):

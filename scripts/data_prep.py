@@ -15,12 +15,12 @@ from PIL import ImageFile
 from skimage import io, color, transform
 from lab_quantization import *
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True #needed because otherwise it gives an error
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # needed because otherwise it gives an error
 
 data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "data")
 
 
-def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, target_size=(256,256)):
+def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, target_size=(256, 256)):
     """
     reads all images of input_dir, which should be the original images and transforms them as follows:
     - resize
@@ -35,7 +35,7 @@ def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, tar
     os.makedirs(output_dir_AB, exist_ok=True)
 
     # List of Image-Data
-    image_files = [f for f in os.listdir(input_dir) if f.lower().endswith(('.jpg','.jpeg','.png'))]
+    image_files = [f for f in os.listdir(input_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
 
     for idx, file_name in enumerate(image_files):
         img_path = os.path.join(input_dir, file_name)
@@ -56,8 +56,8 @@ def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, tar
         lab = color.rgb2lab(img_np)
 
         # split L and AB
-        L_channel = lab[:,:,0]
-        AB_channel = lab[:,:,1:]
+        L_channel = lab[:, :, 0]
+        AB_channel = lab[:, :, 1:]
 
         # normalize L from 0-100 to 0-1
         L_norm = L_channel / 100.0
@@ -69,4 +69,7 @@ def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, tar
         base_name = os.path.splitext(file_name)[0]
         np.save(os.path.join(output_dir_L, f"{base_name}_L.npy"), L_norm)
         np.save(os.path.join(output_dir_AB, f"{base_name}_AB.npy"), labels)
-        print(f"Transformed and saved: {file_name} ({idx+1}/{len(image_files)})")
+        print(f"Transformed and saved: {file_name} ({idx + 1}/{len(image_files)})")
+
+
+print(data_dir)
