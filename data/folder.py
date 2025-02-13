@@ -6,23 +6,28 @@ def move_files_and_delete_subfolders(main_folder):
     if not os.path.exists(main_folder):
         print(f"Der Ordner {main_folder} existiert nicht.")
         return
-    
-    for subfolder in os.listdir(main_folder):
-        subfolder_path = os.path.join(main_folder, subfolder)
-        
-        if os.path.isdir(subfolder_path):
-            # Verschiebe alle Dateien in den Hauptordner
-            for file_name in os.listdir(subfolder_path):
-                file_path = os.path.join(subfolder_path, file_name)
-                if os.path.isfile(file_path):
-                    new_path = os.path.join(main_folder, file_name)
-                    shutil.move(file_path, new_path)
-            
-            # Lösche den leeren Unterordner
-            shutil.rmtree(subfolder_path)
-            print(f"Gelöscht: {subfolder_path}")
-    
-    print("Alle Dateien wurden verschoben und die Unterordner gelöscht.")
+
+    # find all data in folder
+    for root, _, files in os.walk(main_folder, topdown=False):
+        for file in files:
+            src_path = os.path.join(root, file)
+            dst_path = os.path.join(main_folder, file)
+
+            # rename if image with same name
+            counter = 1
+            while os.path.exists(dst_path):
+                name, ext = os.path.splitext(file)
+                dst_path = os.path.join(main_folder, f"{name}_{counter}{ext}")
+                counter += 1
+
+            shutil.move(src_path, dst_path)
+
+    # delete all subfolders that are empty
+    for root, dirs, _ in os.walk(main_folder, topdown=False):
+        for dir in dirs:
+            dir_path = os.path.join(root, dir)
+            if not os.listdir(dir_path):
+                os.rmdir(dir_path)
 
 
 # Beispiel: Hauptordner angeben
