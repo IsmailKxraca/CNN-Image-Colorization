@@ -18,8 +18,12 @@ os.makedirs(output_train_dir, exist_ok=True)
 os.makedirs(output_val_dir, exist_ok=True)
 os.makedirs(output_test_dir, exist_ok=True)
 
+
 # find all image-paths
-image_paths = glob(os.path.join(data_dir, '**', '*.jpg'), recursive=True)
+image_paths = glob(os.path.join(data_dir, '**', '*.jpeg'), recursive=True)
+
+print(data_dir)
+print(image_paths)
 
 # Train, test, val split
 train_paths, temp_paths = train_test_split(image_paths, test_size=0.3, random_state=42)
