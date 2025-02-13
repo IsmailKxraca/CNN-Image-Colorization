@@ -1,6 +1,7 @@
 import os
 import shutil
 
+
 def move_files_and_delete_subfolders(main_folder):
     if not os.path.exists(main_folder):
         print(f"Der Ordner {main_folder} existiert nicht.")
@@ -22,6 +23,7 @@ def move_files_and_delete_subfolders(main_folder):
             print(f"Gelöscht: {subfolder_path}")
     
     print("Alle Dateien wurden verschoben und die Unterordner gelöscht.")
+
 
 # Beispiel: Hauptordner angeben
 main_folder = f"original_data{os.sep}orig"
