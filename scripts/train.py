@@ -4,37 +4,41 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+import os
 
 from cnn import *
 from dataset import *
 
+batch_size = 8
+num_workers = 0
+
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(project_dir)
+
 # folder paths
-folder_l = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"data\preprocessed_data\L_channel\train")
-folder_ab = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"data\preprocessed_data\AB_channel"
-                                                                                r"\train")
+folder_l = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}L_channel{os.sep}train")
+folder_ab = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}AB_channel{os.sep}train")
 folder_checkpoints = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"checkpoints")
 
 # device initialization
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float32
 
 # dataset
 train_dataset = PreprocessedColorizationDataset(folder_l, folder_ab)
-train_loader = DataLoader(train_dataset, batch_size=512, shuffle=True, num_workers=8, pin_memory=True, prefetch_factor=4)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, prefetch_factor=4)
 
 model = ColorizationCNN().to(device, dtype=dtype)
 model = torch.compile(model)
 
 # tensorboard initialization + CNN visualization
 writer = SummaryWriter("runs/colorization_experiment")
-dummy_input = torch.randn(1, 1, 256, 256).to(device, dtype=dtype)
-writer.add_graph(model, dummy_input)
 
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+optimizer = optim.Adam(model.parameters(), lr=1e-5)
 criterion = nn.CrossEntropyLoss()
 
 epochs = 10
-scaler = torch.cuda.amp.GradScaler()
+scaler = torch.amp.GradScaler("cuda")
 
 for epoch in range(epochs):
     model.train()
@@ -49,7 +53,7 @@ for epoch in range(epochs):
         optimizer.zero_grad()
 
         # mixed precision
-        with torch.cuda.amp.autocast(dtype=dtype):
+        with torch.amp.autocast("cuda", dtype=dtype):
             preds = model(l_channel)
             loss = criterion(preds, ab_classes)
 

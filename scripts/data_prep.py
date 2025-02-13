@@ -17,7 +17,22 @@ from lab_quantization import *
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True  # needed because otherwise it gives an error
 
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(project_dir)
+
 data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "data")
+
+input_dir_train = os.path.join(data_dir, f"original_data{os.sep}train")
+input_dir_test = os.path.join(data_dir, f"original_data{os.sep}test")
+input_dir_val = os.path.join(data_dir, f"original_data{os.sep}val")
+
+output_dir_L_train = os.path.join(data_dir, f"preprocessed_data{os.sep}L_channel{os.sep}train")
+output_dir_L_test = os.path.join(data_dir, f"preprocessed_data{os.sep}L_channel{os.sep}test")
+output_dir_L_val = os.path.join(data_dir, f"preprocessed_data{os.sep}L_channel{os.sep}val")
+
+output_dir_AB_train = os.path.join(data_dir, f"preprocessed_data{os.sep}AB_channel{os.sep}train")
+output_dir_AB_test = os.path.join(data_dir, f"preprocessed_data{os.sep}AB_channel{os.sep}test")
+output_dir_AB_val = os.path.join(data_dir, f"preprocessed_data{os.sep}AB_channel{os.sep}val")
 
 
 def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, target_size=(256, 256)):
@@ -72,4 +87,14 @@ def process_and_save_images(input_dir, output_dir_L, output_dir_AB, ab_grid, tar
         print(f"Transformed and saved: {file_name} ({idx + 1}/{len(image_files)})")
 
 
-print(data_dir)
+ab_grid = lab_bins()
+
+# train images
+process_and_save_images(input_dir_train, output_dir_L_train, output_dir_AB_train, ab_grid)
+# test images
+process_and_save_images(input_dir_test, output_dir_L_test, output_dir_AB_test, ab_grid)
+# val images
+process_and_save_images(input_dir_val, output_dir_L_val, output_dir_AB_val, ab_grid)
+
+
+
