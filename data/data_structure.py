@@ -1,5 +1,4 @@
 """
-This script was used to structure the 8.000 Car images for the prototype.
 Train, Test, Validation split as follows:
 Train 70%, Test 15%, Val 15%
 """
@@ -9,10 +8,10 @@ import shutil
 from glob import glob
 from sklearn.model_selection import train_test_split
 
-data_dir = "data"
-output_train_dir = "dataset/train"
-output_val_dir = "dataset/val"
-output_test_dir = "dataset/test"
+data_dir = f"original_data{os.sep}orig"
+output_train_dir = f"original_data{os.sep}train"
+output_val_dir = f"original_data{os.sep}test"
+output_test_dir = f"original_data{os.sep}val"
 
 # create directories
 os.makedirs(output_train_dir, exist_ok=True)
