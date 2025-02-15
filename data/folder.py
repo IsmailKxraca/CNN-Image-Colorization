@@ -1,3 +1,7 @@
+"""
+This script does delete all subfolders of a folder and gathers the data in one main folder
+"""
+
 import os
 import shutil
 
@@ -31,5 +35,5 @@ def move_files_and_delete_subfolders(main_folder):
 
 
 # example
-main_folder = f"/workspace/CNN-Image-Colorization/data/original_data/orig"
+main_folder = f"original_data{os.sep}orig"
 move_files_and_delete_subfolders(main_folder)

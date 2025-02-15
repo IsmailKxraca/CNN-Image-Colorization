@@ -1,12 +1,25 @@
+"""
+This script predicts a new image on the model.
+- preprocess function for new images
+- transform prediciton output of model to readable rgb-image
+"""
+
 import torch
 import numpy as np
 import cv2
 from lab_quantization import *
 from cnn import *
-from PIL import Image
-from PIL import ImageFile
 import matplotlib.pyplot as plt
 import imageio
+import os
+
+
+def show_rgb_image(rgb_image):
+
+    plt.figure(figsize=(8, 8))
+    plt.imshow(rgb_image)
+    plt.axis("off")
+    plt.show()
 
 
 def preprocess_image(image_path, target_size=(256,256)):
@@ -67,37 +80,25 @@ def predict(model, image_path, device="cuda"):
 
     rgb_image = predictions_to_rgb(output, ab_grid, L_channel)
 
-
-    def show_rgb_image(rgb_image):
-        """
-        Zeigt ein RGB-Bild mit Matplotlib an.
-        :param rgb_image: NumPy-Array mit Shape [H, W, 3]
-        """
-        plt.figure(figsize=(8, 8))
-        plt.imshow(rgb_image)
-        plt.axis("off")
-        plt.show()
-
     # show rgb
-    show_rgb_image(rgb_image)
+    # show_rgb_image(rgb_image)
 
     return rgb_image
 
 
+# *example*
 # Model
 model = ColorizationCNN()
 
-model_ = r"/workspace/CNN-Image-Colorization/colorization_model.pth"
+model_ = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "colorization_model_with_rebalancing.pth")
 
 # load weights
 state_dict = torch.load(model_, map_location=torch.device("cpu"))
-
 
 # delete "_orig_mod." Präfix from keys, that is made by torch.compile()
 new_state_dict = {k.replace("_orig_mod.", ""): v for k, v in state_dict.items()}
 
 model.load_state_dict(new_state_dict)
-
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -105,7 +106,7 @@ model.to(device)
 model.eval()
 
 # test
-predicted_img= predict(model, r"/workspace/CNN-Image-Colorization/scripts/ILSVRC2012_val_00001933.JPEG", device)
+predicted_img= predict(model, r"ILSVRC2012_val_00001933.JPEG", device)
 
 predicted_img = (predicted_img * 255).astype("uint8")
 

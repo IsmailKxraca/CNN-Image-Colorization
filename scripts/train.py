@@ -1,3 +1,15 @@
+"""
+This is the train script, where the training of the model happens.
+If a Cuda-Gpu is availabe mixed precision will be used
+
+This script includes tensorboard apllicated, the files are saved in "runs" folder
+
+In this version Crossentropyloss with Classrebalancing (dont know whether it works) is used, with a former calculated class_frequency file. (caculated with rebalancing.py)
+The Optimizer is Adam
+
+Checkpionts of every epoch is being saved in checkpints folder (empty in this version, because files are too big for github)
+"""
+
 import torch
 import torch.optim as optim
 import torch.nn as nn
@@ -21,24 +33,26 @@ os.chdir(project_dir)
 # folder paths
 folder_l = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"CNN-Image-Colorization{os.sep}data{os.sep}preprocessed_data{os.sep}L_channel{os.sep}train")
 folder_ab = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"CNN-Image-Colorization{os.sep}data{os.sep}preprocessed_data{os.sep}AB_channel{os.sep}train")
-folder_checkpoints = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"CNN-Image-Colorization/checkpoints")
+folder_checkpoints = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"checkpoints")
 
 # device initialization
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 dtype = torch.float16 if torch.cuda.is_bf16_supported() else torch.float32
 
-# dataset
+# dataset loader
 train_dataset = PreprocessedColorizationDataset(folder_l, folder_ab)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, prefetch_factor=4)
 
 model = ColorizationCNN().to(device)
+
+# compile for better performance
 model = torch.compile(model)
 
 # tensorboard initialization 
 writer = SummaryWriter(f"runs/{training_name}")
 
 # class rebalancing
-class_frequencies = np.load(r"/workspace/CNN-Image-Colorization/class_frequencies.npy")
+class_frequencies = np.load(os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"class_frequencies.npy"))
 
 class_weights = 1 - class_frequencies
 
@@ -100,7 +114,7 @@ torch.save(model.state_dict(), f"colorization_model_{training_name}.pth")
 print("Training finished!")
 
 
-# testt-phase
+# test-phase
 print("Starting test")
 
 folder_L_test = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}L_channel{os.sep}test")

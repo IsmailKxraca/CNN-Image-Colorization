@@ -1,5 +1,5 @@
 """
-In this script i will code a dataloader generator for loading the data in the training process
+This is the Dataset Class for the data
 """
 import os
 import numpy as np

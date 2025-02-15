@@ -1,16 +1,15 @@
 """
-In this script, I will prepare the dataset for the usage in the CNN
+This Script processes the original dataset for our model
 This includes:
  - turning them into 256x256
  - turn them into LAB
- - extract A and B, turn into classes (These will be the labels)
+ - extract A and B, quantize (These will be the labels)
  - use L as grayscale image for training and testing
 """
 
 import os
 import numpy as np
 import cv2
-from PIL import Image
 from PIL import ImageFile
 from skimage import io, color, transform
 from lab_quantization import *
@@ -25,7 +24,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True  # needed because otherwise it gives an e
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(project_dir)
 
-data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "CNN-Image-Colorization/data")
+data_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "data")
 
 print(data_dir)
 

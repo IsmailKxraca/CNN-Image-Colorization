@@ -1,8 +1,5 @@
 """
-In this script I will quantize the ab colorspace into discrete classes.
-I will use binning and clustering to identify which colors get used in reality and which are not.
-
-I will code functions for extracting the ab values of a Lab-image and classify them into the color-classes.
+This script cointains useful functions for binning the Lab colorspace.
 """
 import numpy as np
 from skimage.color import lab2rgb
