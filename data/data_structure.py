@@ -8,10 +8,10 @@ import shutil
 from glob import glob
 from sklearn.model_selection import train_test_split
 
-data_dir = f"original_data{os.sep}orig"
-output_train_dir = f"original_data{os.sep}train"
-output_val_dir = f"original_data{os.sep}test"
-output_test_dir = f"original_data{os.sep}val"
+data_dir = r"/workspace/CNN-Image-Colorization/data/original_data/orig"
+output_train_dir = r"/workspace/CNN-Image-Colorization/data/original_data/train"
+output_val_dir = r"/workspace/CNN-Image-Colorization/data/original_data/test"
+output_test_dir = r"/workspace/CNN-Image-Colorization/data/original_data/val"
 
 # create directories
 os.makedirs(output_train_dir, exist_ok=True)
@@ -20,7 +20,7 @@ os.makedirs(output_test_dir, exist_ok=True)
 
 
 # find all image-paths
-image_paths = glob(os.path.join(data_dir, '**', '*.jpeg'), recursive=True)
+image_paths = glob(os.path.join(data_dir, '**', '*.JPEG'), recursive=True)
 
 print(data_dir)
 print(image_paths)

@@ -30,6 +30,6 @@ def move_files_and_delete_subfolders(main_folder):
                 os.rmdir(dir_path)
 
 
-# Beispiel: Hauptordner angeben
-main_folder = f"original_data{os.sep}orig"
+# example
+main_folder = f"/workspace/CNN-Image-Colorization/data/original_data/orig"
 move_files_and_delete_subfolders(main_folder)

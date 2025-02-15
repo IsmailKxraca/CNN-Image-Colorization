@@ -2,6 +2,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.cuda.amp import GradScaler
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 import os
@@ -9,34 +10,46 @@ import os
 from cnn import *
 from dataset import *
 
-batch_size = 8
-num_workers = 0
-epochs = 10
+batch_size = 32
+num_workers = 8
+epochs = 50
+training_name = "with_rebalancing"
 
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(project_dir)
 
 # folder paths
-folder_l = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}L_channel{os.sep}train")
-folder_ab = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}AB_channel{os.sep}train")
-folder_checkpoints = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"checkpoints")
+folder_l = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"CNN-Image-Colorization{os.sep}data{os.sep}preprocessed_data{os.sep}L_channel{os.sep}train")
+folder_ab = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"CNN-Image-Colorization{os.sep}data{os.sep}preprocessed_data{os.sep}AB_channel{os.sep}train")
+folder_checkpoints = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), r"CNN-Image-Colorization/checkpoints")
 
 # device initialization
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float32
+dtype = torch.float16 if torch.cuda.is_bf16_supported() else torch.float32
 
 # dataset
 train_dataset = PreprocessedColorizationDataset(folder_l, folder_ab)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, prefetch_factor=4)
 
-model = ColorizationCNN().to(device, dtype=dtype)
+model = ColorizationCNN().to(device)
 model = torch.compile(model)
 
-# tensorboard initialization + CNN visualization
-writer = SummaryWriter("runs/colorization_experiment")
+# tensorboard initialization 
+writer = SummaryWriter(f"runs/{training_name}")
 
-optimizer = optim.Adam(model.parameters(), lr=1e-5)
-criterion = nn.CrossEntropyLoss()
+# class rebalancing
+class_frequencies = np.load(r"/workspace/CNN-Image-Colorization/class_frequencies.npy")
+
+class_weights = 1 - class_frequencies
+
+# min max normalization
+class_weights = class_weights / class_weights.sum()
+
+# tensor
+class_weights = torch.tensor(class_weights, dtype=dtype).cuda()
+
+optimizer = optim.Adam(model.parameters(), lr=1e-4)
+criterion = nn.CrossEntropyLoss(weight=class_weights)
 
 scaler = torch.amp.GradScaler("cuda")
 
@@ -47,7 +60,7 @@ for epoch in range(epochs):
     loop = tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}")
 
     for batch_idx, (l_channel, ab_classes) in enumerate(loop):
-        l_channel = l_channel.to(device, dtype=dtype)
+        l_channel = l_channel.to(device)
         ab_classes = ab_classes.to(device)
 
         optimizer.zero_grad()
@@ -71,7 +84,7 @@ for epoch in range(epochs):
 
     print(f"Epoch {epoch + 1}: Average Loss: {avg_epoch_loss:.4f}")
 
-    checkpoint_path = os.path.join(folder_checkpoints, f"checkpoint_epoch_{epoch + 1}.pt")
+    checkpoint_path = os.path.join(folder_checkpoints, f"checkpoint_{training_name}_epoch_{epoch + 1}.pt")
     torch.save({
         'epoch': epoch + 1,
         'model_state_dict': model.state_dict(),
@@ -83,12 +96,12 @@ for epoch in range(epochs):
 
 
 # save end model
-torch.save(model.state_dict(), "colorization_model.pth")
+torch.save(model.state_dict(), f"colorization_model_{training_name}.pth")
 print("Training finished!")
 
 
-# **Nach dem Training: Testen**
-print("Starte Testphase...")
+# testt-phase
+print("Starting test")
 
 folder_L_test = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}L_channel{os.sep}test")
 folder_ab_test = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), f"data{os.sep}preprocessed_data{os.sep}AB_channel{os.sep}train")
@@ -113,6 +126,6 @@ with torch.no_grad():
     avg_test_loss = test_loss / len(test_loader)
     writer.add_scalar("Loss/test", avg_test_loss)
     
-print(f"Durchschnittlicher Test-Loss: {avg_test_loss:.4f}")
+print(f"Average Test-Loss: {avg_test_loss:.4f}")
 
 writer.close()

@@ -11,6 +11,7 @@ import numpy as np
 from PIL import Image
 import cv2
 import tempfile
+from predictions import *
 
 
 def convert_to_bw(image):
