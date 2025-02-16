@@ -9,3 +9,4 @@ matplotlib~=3.10.0
 torchvision~=0.21.0
 tqdm~=4.67.1
 tensorboard
+altair==4.0

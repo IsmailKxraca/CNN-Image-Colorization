@@ -3,6 +3,7 @@ This is the train script, where the training of the model happens.
 If a Cuda-Gpu is availabe mixed precision will be used
 
 This script includes tensorboard apllicated, the files are saved in "runs" folder
+to see the tensorboard you have to use this comand: tensorboard --logdir="path to folder"
 
 In this version Crossentropyloss with Classrebalancing (dont know whether it works) is used, with a former calculated class_frequency file. (caculated with rebalancing.py)
 The Optimizer is Adam

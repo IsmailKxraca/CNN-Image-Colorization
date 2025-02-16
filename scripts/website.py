@@ -1,5 +1,5 @@
 """
-This script was (partly) generated with the help of v0 by Vercel
+The "Design" part of the website was generated with the help of the AI v0 by Vercel.
 
 A Streamlit website for simple User Interface.
 You can start the Streamlit-Website by pasting following command in your cmd:
@@ -11,7 +11,28 @@ import numpy as np
 from PIL import Image
 import cv2
 import tempfile
-from predictions import *
+import os
+import torch
+from cnn import *
+from predictions import predict
+
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(project_dir)
+
+# load the trained Model and make it ready for predictions
+model = ColorizationCNN()
+model_ = os.path.join(os.getcwd(), "colorization_model_with_rebalancing.pth")
+model.eval()
+state_dict = torch.load(model_, map_location=torch.device("cpu"))
+
+new_state_dict = {k.replace("_orig_mod.", ""): v for k, v in state_dict.items()}
+
+model.load_state_dict(new_state_dict)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+model.eval()
 
 
 def convert_to_bw(image):
@@ -24,8 +45,22 @@ def convert_to_bw(image):
 
 
 def colorize_image(image):
-    colorized_img = image
-    return colorized_img
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+        temp_file.write(uploaded_file.getbuffer())
+        temp_path = temp_file.name
+
+    out_np = np.asarray(Image.open(temp_path))
+    if out_np.ndim == 2:
+        out_np = np.tile(out_np[:, :, None], 3)
+
+    original_shape = out_np.shape
+
+    predicted_image = predict(model, temp_path, device=device)
+    predicted_image = (predicted_image * 255).astype("uint8")
+
+    resized_predicted_img = cv2.resize(predicted_image, (original_shape[1],original_shape[0]), interpolation=cv2.INTER_AREA)
+
+    return resized_predicted_img
 
 
 st.set_page_config(page_title="Image Colorization", layout="wide")
@@ -99,20 +134,21 @@ if 'image' in locals() and image is not None:
 
     with col1:
         st.markdown("<h3 style='text-align: center; color: #ffffff;'>Groundtruth Bild</h3>", unsafe_allow_html=True)
-        st.image(image, use_container_width=True)
+        st.image(image)
 
     with col2:
         st.markdown("<h3 style='text-align: center; color: #ffffff;'>Schwarz & Weiß</h3>", unsafe_allow_html=True)
         bw_image = convert_to_bw(image)
-        st.image(bw_image, use_container_width=True)
+        st.image(bw_image)
 
     with col3:
         st.markdown("<h3 style='text-align: center; color: #9d4edd;'>Eingefärbtes Bild</h3>", unsafe_allow_html=True)
         if st.button("Einfärben"):
             colorized_image = colorize_image(image)
-            st.image(colorized_image, use_container_width=True)
+            st.image(colorized_image)
         else:
             st.write("Klicke auf 'Einfärben' um ein Ergebniss zu erhalten")
 
 else:
     st.write("Upload an image or take a picture to start the colorization process.")
+    

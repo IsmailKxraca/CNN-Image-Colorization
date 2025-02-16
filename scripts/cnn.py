@@ -61,15 +61,9 @@ class ColorizationCNN(nn.Module):
         self.upsample4 = nn.Upsample(scale_factor=4, mode='bilinear', align_corners=False)
 
     def forward(self, input_l):
-        e1 = self.encoder[:3](input_l)  
-        e2 = self.encoder[3:6](e1)      
-        e3 = self.encoder[6:](e2)       
-
-        x = self.middle(e3)
+        x = self.encoder(input_l)
+        x = self.middle(x)
         x = self.decoder(x)
-
-        # Skip Connections
-        x = torch.cat([x, e2], dim=1)  
         x = self.upsample4(x)
+
         return x
-    

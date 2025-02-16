@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import imageio
 import os
 
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(project_dir)
 
 def show_rgb_image(rgb_image):
 
@@ -37,6 +39,7 @@ def preprocess_image(image_path, target_size=(256,256)):
     # make tensor
     L_tensor = torch.tensor(L_norm, dtype=torch.float32).unsqueeze(0).unsqueeze(0) 
 
+    # output: normalized l_channel and l tensor
     return L_norm, L_tensor
 
 
@@ -45,17 +48,11 @@ def predictions_to_rgb(predictions, ab_grid, L_channel):
   
     # argmax
     pred_classes = torch.argmax(predictions, dim=1).cpu().numpy()
-
-    print(pred_classes.shape)
  
     pred_classes = pred_classes[0]
 
-    print(pred_classes.shape)
-   
     # get ab values from the grid
     ab_pred = ab_grid[pred_classes]  
-
-    print(ab_pred)
 
     # unnormalize L-Channel for Opencv
     L_channel = L_channel * 255
@@ -68,7 +65,7 @@ def predictions_to_rgb(predictions, ab_grid, L_channel):
     return rgb_pred
 
 
-def predict(model, image_path, device="cuda"):
+def predict(model, image_path, device="cpu"):
     L_channel, input_tensor = preprocess_image(image_path)
     input_tensor = input_tensor.to(device)
 
@@ -86,28 +83,29 @@ def predict(model, image_path, device="cuda"):
     return rgb_image
 
 
-# *example*
-# Model
-model = ColorizationCNN()
+def beispiel():
+    model = ColorizationCNN()
 
-model_ = os.path.join(os.path.abspath(os.path.join(os.getcwd(), os.pardir)), "colorization_model_with_rebalancing.pth")
+    model_ = os.path.join(os.getcwd(), "colorization_model_with_rebalancing.pth")
+    print(model_)
 
-# load weights
-state_dict = torch.load(model_, map_location=torch.device("cpu"))
+    # load weights
+    state_dict = torch.load(model_, map_location=torch.device("cpu"))
 
-# delete "_orig_mod." Präfix from keys, that is made by torch.compile()
-new_state_dict = {k.replace("_orig_mod.", ""): v for k, v in state_dict.items()}
+    # delete "_orig_mod." Präfix from keys, that is made by torch.compile()
+    new_state_dict = {k.replace("_orig_mod.", ""): v for k, v in state_dict.items()}
 
-model.load_state_dict(new_state_dict)
+    model.load_state_dict(new_state_dict)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
 
-model.eval()
+    model.eval()
 
-# test
-predicted_img= predict(model, r"ILSVRC2012_val_00001933.JPEG", device)
+    # test
+    predicted_img= predict(model, os.path.join(os.getcwd(), f"scripts{os.sep}ILSVRC2012_val_00001933.JPEG"), device)
 
-predicted_img = (predicted_img * 255).astype("uint8")
+    predicted_img = (predicted_img * 255).astype("uint8")
 
-imageio.imwrite("Biber_ohne_rebalancing.png", predicted_img)
+    imageio.imwrite("test.png", predicted_img)
+
